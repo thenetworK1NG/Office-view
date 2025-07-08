@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Plan with Location Details</title>
+    <link rel="stylesheet" href="template/style.css">
+    <link rel="stylesheet" href="plan-side-menu.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .image-container {
+            position: relative;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .name-button {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2980b9;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            min-width: 120px;
+        }
+        .name-button:hover {
+            background: #3498db;
+            color: white;
+            transform: scale(1.05);
+        }
+        /* Fixed button positions */
+        #yolandie {
+            top: 556px;
+            left: 571px;
+        }
+        #francois {
+            top: 817px;
+            left: 811px;
+        }
+        #neil {
+            top: 1127px;
+            left: 500px;
+        }
+        #andre {
+            top: 1393px;
+            left: 514px;
+        }
+        /* Make trash icon red and more visible */
+        #openTrashBtn {
+            background: #e53935 !important;
+            color: #fff !important;
+            border-radius: 50% !important;
+            border: 4px solid #fff !important;
+            box-shadow: 0 4px 24px 4px #e5393555 !important;
+            width: 80px !important;
+            height: 80px !important;
+            font-size: 3rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 999 !important;
+            cursor: pointer !important;
+            transition: box-shadow 0.2s !important;
+            opacity: 1 !important;
+        }
+        #openTrashBtn:active {
+            box-shadow: 0 2px 8px #b23c3c99 !important;
+        }
+        #bin-coords {
+            background: #222c !important;
+            color: #fff !important;
+            font-size: 1.1rem !important;
+            padding: 4px 16px !important;
+            border-radius: 8px !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            opacity: 1 !important;
+            z-index: 999 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Office Plan</h1>
+        <p class="subtitle">Click any name to view their jobs</p>
+        
+        <div class="image-container">
+            <img src="OFFICE PLAN.jpg" alt="Office Plan" style="max-width: 100%;">
+            <button class="name-button" id="yolandie">Yolandie</button>
+            <button class="name-button" id="francois">Francois</button>
+            <button class="name-button" id="andre">Andre</button>
+            <button class="name-button" id="neil">Neil</button>
+            <!-- Movable, rotatable button -->
+            <button class="name-button" id="movableUserBtn" style="top: 1838px; left: 259px; transform: rotate(90deg);">Movable User</button>
+        </div>
+        <!-- Two fixed Trash Bin Buttons (unmovable, no coords) -->
+        <button id="openTrashBtn1" title="Open Recycle Bin 1">🗑️</button>
+        <button id="openTrashBtn2" title="Open Recycle Bin 2">🗑️</button>
+    </div>
+        
+    <!-- Side Menu for Clients -->
+    <div id="sideMenu" style="display:none;position:fixed;top:0;right:0;width:340px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(44,62,80,0.12);z-index:3000;padding:32px 18px 18px 18px;overflow-y:auto;transition:right 0.3s;">
+        <button id="closeSideMenu" style="position:absolute;top:18px;right:18px;font-size:1.5rem;background:none;border:none;color:#7c3aed;cursor:pointer;">&times;</button>
+        <h2 id="sideMenuTitle" style="color:#7c3aed;text-align:left;margin-bottom:18px;font-size:1.3rem;"></h2>
+        <div id="clientListMenu"></div>
+        <div id="clientJobsPanel" style="margin-top:24px;"></div>
+    </div>
+
+    <!-- Recycle Bin Dropdown Container (for both bin buttons) -->
+    <div id="recycleBinDropdown" style="display:none;position:absolute;z-index:99999;"></div>
+
+    <!-- Left-side Message Panel -->
+    <div id="messagePanel" style="position:fixed;top:0;left:0;width:340px;height:100vh;background:#fff;box-shadow:2px 0 24px rgba(44,62,80,0.12);z-index:3500;padding:24px 0 0 0;display:flex;flex-direction:column;">
+      <div style="padding:0 18px 12px 18px;border-bottom:1.5px solid #eee;">
+        <h2 style="color:#7c3aed;font-size:1.2rem;margin-bottom:8px;">Messages</h2>
+        <select id="messageUserSelect" style="width:100%;padding:8px 10px;border-radius:7px;border:1.5px solid #7c3aed;font-size:1rem;margin-bottom:8px;"></select>
+      </div>
+      <div id="messageHistory" style="flex:1;overflow-y:auto;padding:12px 18px 0 18px;"></div>
+      <div style="padding:12px 18px 18px 18px;border-top:1.5px solid #eee;">
+        <textarea id="messageInput" rows="2" style="width:100%;border-radius:7px;border:1.5px solid #7c3aed;padding:8px;font-size:1rem;"></textarea>
+        <button id="sendMessageFirebaseBtn" style="margin-top:8px;background:#7c3aed;color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:1rem;cursor:pointer;width:100%;">Send</button>
+        <button id="clearChatBtn" style="margin-top:8px;background:#b23c3c;color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:1rem;cursor:pointer;width:100%;">Clear Chat</button>
+      </div>
+    </div>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcxQLLka_eZ5tduUW3zEAKKdKMvebeXRI",
+      authDomain: "job-card-8bb4b.firebaseapp.com",
+      databaseURL: "https://job-card-8bb4b-default-rtdb.firebaseio.com",
+      projectId: "job-card-8bb4b",
+      storageBucket: "job-card-8bb4b.firebasestorage.app",
+      messagingSenderId: "355622785459",
+      appId: "1:355622785459:web:fc49655132c77fb9cbfbc6",
+      measurementId: "G-T7EET4NRQR"
+    };
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Utility functions
+    function groupJobsByClient(jobs) {
+      const map = new Map();
+      jobs.forEach(job => {
+        if (!job.customerName) return;
+        if (!map.has(job.customerName)) map.set(job.customerName, []);
+        map.get(job.customerName).push(job);
+      });
+      return map;
+    }
+    function safeField(val) {
+      return (val !== undefined && val !== null && val !== "") ? val : "—";
+    }
+    function safeList(arr) {
+      return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : '—';
+    }
+    function formatRand(amount) {
+      if (!amount || isNaN(amount)) return 'R 0.00';
+      return 'R ' + Number(amount).toFixed(2);
+    }
+
+    // Side menu logic
+    const sideMenu = document.getElementById('sideMenu');
+    const closeSideMenu = document.getElementById('closeSideMenu');
+    const sideMenuTitle = document.getElementById('sideMenuTitle');
+    const clientListMenu = document.getElementById('clientListMenu');
+    const clientJobsPanel = document.getElementById('clientJobsPanel');
+
+    closeSideMenu.onclick = () => {
+      sideMenu.style.display = 'none';
+      clientListMenu.innerHTML = '';
+      clientJobsPanel.innerHTML = '';
+    };
+    window.onclick = function(event) {
+      if (event.target === sideMenu) {
+        sideMenu.style.display = 'none';
+        clientListMenu.innerHTML = '';
+        clientJobsPanel.innerHTML = '';
+      }
+    };
+
+    document.getElementById('yolandie').onclick = () => window.showClientsForUser('Yolandie');
+    document.getElementById('francois').onclick = () => window.showClientsForUser('Francois');
+    document.getElementById('andre').onclick = () => window.showClientsForUser('Andre');
+    document.getElementById('neil').onclick = () => window.showClientsForUser('Neil');
+    </script>
+    <script type="module" src="plan-side-menu.js"></script>
+    <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      var imgContainer = document.querySelector('.image-container');
+      var binBtn1 = document.getElementById('openTrashBtn1');
+      var binBtn2 = document.getElementById('openTrashBtn2');
+      var recycleBinDropdown = document.getElementById('recycleBinDropdown');
+      if (imgContainer && binBtn1 && binBtn2) {
+        imgContainer.appendChild(binBtn1);
+        imgContainer.appendChild(binBtn2);
+        binBtn1.style.position = 'absolute';
+        binBtn1.style.left = '659px';
+        binBtn1.style.top = '1198px';
+        binBtn2.style.position = 'absolute';
+        binBtn2.style.left = '732px';
+        binBtn2.style.top = '817px';
+        // Both bins open the recycle bin dropdown and render the list at the button
+        binBtn1.onclick = function(event) { window.renderRecycleBin(event); };
+        binBtn2.onclick = function(event) { window.renderRecycleBin(event); };
+        if (recycleBinDropdown) recycleBinDropdown.addEventListener('click', function(e) {
+          if (e.target === recycleBinDropdown) recycleBinDropdown.style.display = 'none';
+        });
+      }
+
+      // --- Send Message Feature in Side Menu ---
+      // (Removed all code related to Send Message button and modal in the side menu)
+    });
+    </script>
+</body>
+</html>
