@@ -96,14 +96,7 @@ window.showClientsForUser = function(userName) {
 // Standalone showJobsForClient
 window.showJobsForClient = function(user, client) {
   const panel = document.getElementById('clientJobsPanel');
-  panel.innerHTML = `<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;'>
-    <h3 style='color:#38bdf8;margin:0;'>${client}</h3>
-    <button id='detailedViewBtn' style='background:#7c3aed;color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:0.98rem;cursor:pointer;'>Detailed View</button>
-  </div>`;
-  setTimeout(() => {
-    const btn = document.getElementById('detailedViewBtn');
-    if (btn) btn.onclick = () => window.open('https://thenetwork1ng.github.io/view-jobs-/', '_blank');
-  }, 0);
+  panel.innerHTML = `<h3 style='color:#38bdf8;margin-bottom:10px;'>${client}</h3>`;
   const { getDatabase, ref, onValue } = window.firebaseDbApi;
   const database = window.firebaseDbInstance;
   const jobsRef = ref(database, 'jobCards');
@@ -509,75 +502,6 @@ window.initMessagingPanel = function(currentUser) {
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendMessageFirebaseBtn');
   const clearBtn = document.getElementById('clearChatBtn');
-  // --- Improved file input UI ---
-  let fileInput = document.getElementById('messageFileInput');
-  let fileLabel = document.getElementById('messageFileLabel');
-  let fileNameDisplay = document.getElementById('messageFileNameDisplay');
-  if (!fileInput) {
-    fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.id = 'messageFileInput';
-    fileInput.accept = '.jpg,.jpeg,.png,.pdf,.cdr,.ai,.svg,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar'; // add .cdr and common types
-    fileInput.style.display = 'none';
-    // Label styled as a button
-    fileLabel = document.createElement('label');
-    fileLabel.id = 'messageFileLabel';
-    fileLabel.htmlFor = 'messageFileInput';
-    fileLabel.textContent = '📎 Attach File';
-    fileLabel.style.display = 'inline-block';
-    fileLabel.style.background = '#38bdf8';
-    fileLabel.style.color = '#fff';
-    fileLabel.style.padding = '7px 16px';
-    fileLabel.style.borderRadius = '7px';
-    fileLabel.style.fontSize = '0.98rem';
-    fileLabel.style.cursor = 'pointer';
-    fileLabel.style.marginTop = '8px';
-    fileLabel.style.marginBottom = '4px';
-    fileLabel.style.transition = 'background 0.18s';
-    fileLabel.onmouseover = () => fileLabel.style.background = '#0ea5e9';
-    fileLabel.onmouseout = () => fileLabel.style.background = '#38bdf8';
-    // File name display
-    fileNameDisplay = document.createElement('span');
-    fileNameDisplay.id = 'messageFileNameDisplay';
-    fileNameDisplay.style.display = 'inline-block';
-    fileNameDisplay.style.marginLeft = '10px';
-    fileNameDisplay.style.fontSize = '0.97rem';
-    fileNameDisplay.style.color = '#7c3aed';
-    // Insert elements
-    sendBtn.parentNode.insertBefore(fileLabel, sendBtn.nextSibling);
-    sendBtn.parentNode.insertBefore(fileInput, fileLabel.nextSibling);
-    sendBtn.parentNode.insertBefore(fileNameDisplay, fileInput.nextSibling);
-    // Supported types note
-    let note = document.getElementById('fileTypeNote');
-    if (!note) {
-      note = document.createElement('div');
-      note.id = 'fileTypeNote';
-      note.textContent = 'Supported: images, PDF, DOC, XLS, ZIP, RAR, SVG, AI, and CorelDRAW (.cdr)';
-      note.style.fontSize = '0.92rem';
-      note.style.color = '#888';
-      note.style.margin = '2px 0 8px 0';
-      sendBtn.parentNode.insertBefore(note, fileLabel.nextSibling);
-    }
-  }
-  // Show selected file name
-  fileInput.onchange = function() {
-    if (fileInput.files && fileInput.files[0]) {
-      fileNameDisplay.textContent = fileInput.files[0].name;
-      // Optionally, warn if not supported
-      const allowed = [
-        'jpg','jpeg','png','pdf','cdr','ai','svg','doc','docx','xls','xlsx','txt','zip','rar'
-      ];
-      const ext = fileInput.files[0].name.split('.').pop().toLowerCase();
-      if (!allowed.includes(ext)) {
-        fileNameDisplay.textContent += ' (⚠️ Not a recommended file type)';
-        fileNameDisplay.style.color = '#e11d48';
-      } else {
-        fileNameDisplay.style.color = '#7c3aed';
-      }
-    } else {
-      fileNameDisplay.textContent = '';
-    }
-  };
   if (!userSelect || !messageHistory || !messageInput || !sendBtn || !clearBtn) return;
 
   // Populate user select (excluding self)
@@ -621,15 +545,7 @@ window.initMessagingPanel = function(currentUser) {
         const div = document.createElement('div');
         div.style.margin = '8px 0';
         div.style.textAlign = m.sender === currentUser ? 'right' : 'left';
-        let content = '';
-        if (m.text) {
-          content += `<span style='display:inline-block;max-width:70%;padding:8px 14px;border-radius:12px;background:${m.sender === currentUser ? '#7c3aed' : '#eee'};color:${m.sender === currentUser ? '#fff' : '#232946'};font-size:1rem;'>${m.text}</span>`;
-        }
-        if (m.fileName && m.fileUrl) {
-          content += `<br><a href="${m.fileUrl}" download="${m.fileName}" style="display:inline-block;margin-top:6px;color:#38bdf8;text-decoration:underline;">📎 ${m.fileName}</a>`;
-        }
-        content += `<br><span style='font-size:0.85em;color:#888;'>${m.sender} • ${new Date(m.time).toLocaleString()}</span>`;
-        div.innerHTML = content;
+        div.innerHTML = `<span style='display:inline-block;max-width:70%;padding:8px 14px;border-radius:12px;background:${m.sender === currentUser ? '#7c3aed' : '#eee'};color:${m.sender === currentUser ? '#fff' : '#232946'};font-size:1rem;'>${m.text}</span><br><span style='font-size:0.85em;color:#888;'>${m.sender} • ${new Date(m.time).toLocaleString()}</span>`;
         messageHistory.appendChild(div);
       });
       messageHistory.scrollTop = messageHistory.scrollHeight;
@@ -639,37 +555,18 @@ window.initMessagingPanel = function(currentUser) {
   // Send message
   sendBtn.onclick = function() {
     const text = messageInput.value.trim();
-    const file = fileInput.files[0];
-    if ((!text && !file) || !selectedUser) return;
+    if (!text || !selectedUser) return;
     const { getDatabase, ref, push } = window.firebaseDbApi;
     const database = window.firebaseDbInstance;
     const chatKey = [currentUser, selectedUser].sort().join('_');
     const chatRef = ref(database, 'messages/' + chatKey);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const fileUrl = e.target.result;
-        push(chatRef, {
-          sender: currentUser,
-          recipient: selectedUser,
-          text,
-          fileName: file.name,
-          fileUrl,
-          time: Date.now()
-        });
-        messageInput.value = '';
-        fileInput.value = '';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      push(chatRef, {
-        sender: currentUser,
-        recipient: selectedUser,
-        text,
-        time: Date.now()
-      });
-      messageInput.value = '';
-    }
+    push(chatRef, {
+      sender: currentUser,
+      recipient: selectedUser,
+      text,
+      time: Date.now()
+    });
+    messageInput.value = '';
   };
 
   // Clear chat
